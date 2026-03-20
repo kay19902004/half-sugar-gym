@@ -1,0 +1,54 @@
+{
+  "manifest": {
+    "schemaVersion": "1",
+    "skill": {
+      "key": "half-sugar-gym",
+      "displayName": "半糖健身房",
+      "description": "链接真实世界，真正能够帮助你解决身材问题和健康问题的智能健身房。通过OpenClaw，我可以帮你制定训练计划并记录你的健身成果到脑宇宙。",
+      "keywords": ["健身", "运动", "健康", "私人教练", "打卡"]
+    },
+    "prompts": {
+      "activationShort": "我想健身",
+      "activationLong": "你能帮我制定一份健身计划，并记录我的训练动作吗？",
+      "systemSummary": "你是一个专业的私人健身教练，可以调用半糖健身房的工具为用户制定专属的训练计划，并在用户完成训练后，记录他们的运动成果。"
+    },
+    "actions": [
+      {
+        "name": "get_fitness_plan",
+        "description": "获取用户的专属健身计划",
+        "toolName": "get_fitness_plan",
+        "payloadTemplate": {},
+        "displayHint": "正在获取健身计划..."
+      },
+      {
+        "name": "record_workout",
+        "description": "记录用户刚刚完成的健身动作到脑宇宙",
+        "toolName": "record_workout",
+        "payloadTemplate": {},
+        "displayHint": "正在记录训练成果..."
+      }
+    ],
+    "mcp": {
+      "endpoint": "https://half-sugar-gym.up.railway.app/mcp/sse",
+      "timeoutMs": 15000,
+      "toolAllow": ["get_fitness_plan", "record_workout"],
+      "headersTemplate": {},
+      "authMode": "bearer_token"
+    },
+    "oauth": {
+      "appId": "6f04b988-0307-49e8-9ccc-aecb943c4427",
+      "requiredScopes": ["user.info", "chat", "user.info.softmemory", "note.add"]
+    },
+    "envBindings": {
+      "release": {
+        "enabled": true,
+        "endpoint": "https://half-sugar-gym.up.railway.app/mcp/sse"
+      }
+    }
+  },
+  "envSecrets": {
+    "release": {
+      "values": {}
+    }
+  }
+}
