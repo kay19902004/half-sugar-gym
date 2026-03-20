@@ -96,7 +96,7 @@ export default function Studio() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#1a1a1a] flex flex-col font-sans relative overflow-hidden items-center justify-center">
       <header className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/80 to-transparent flex items-center px-6 z-50">
         <Link to="/gym" className="flex items-center text-white/80 hover:text-white transition-colors bg-black/40 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -104,8 +104,9 @@ export default function Studio() {
         </Link>
       </header>
 
+      {/* 比例容器：保持 16:9 比例，最大高度不超过屏幕，防止裁剪 */}
       <div 
-        className="flex-1 w-full h-full relative bg-cover bg-center flex items-center justify-center"
+        className="relative w-full max-h-screen aspect-video bg-contain bg-center bg-no-repeat flex items-center justify-center"
         style={{ backgroundImage: `url(${consultBg})` }}
       >
         <div className="absolute transition-all duration-300" style={{ left: '35%', top: '55%', zIndex: 50 }}>
