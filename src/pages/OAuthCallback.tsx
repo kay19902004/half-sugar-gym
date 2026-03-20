@@ -32,8 +32,13 @@ export default function OAuthCallback() {
       try {
         const redirectUri = window.location.origin + '/oauth/callback';
         
-        // 1. 去后厨（3001 端口）换取真实的 Access Token
-        const response = await fetch('http://localhost:3001/api/auth/token', {
+        // 1. 调用本地或线上后端代理，用 code 换取真实 access_token
+        // 动态适配线上和本地后端地址
+        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? 'http://localhost:3001/api/auth/token'
+          : `${window.location.origin}/api/auth/token`; // 假设线上环境前后端部署在同一域名下，或者由 Railway 处理代理
+
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code, redirect_uri: redirectUri })
@@ -59,7 +64,7 @@ export default function OAuthCallback() {
             name: userInfo.name || '真实玩家', 
             // 如果你在后台没有配 Shades，这里会给一个默认的
             shades: userInfo.shades && userInfo.shades.length > 0 ? userInfo.shades : ['健身达人', '喜欢交友'],
-            avatar: userInfo.avatar || ''
+            ...(userInfo.avatar ? { avatar: userInfo.avatar } : {})
           });
         } catch (infoErr) {
           // 就算拉取信息失败了，也不要卡死用户，打印个警告继续放行

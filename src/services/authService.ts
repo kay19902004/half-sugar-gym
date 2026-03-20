@@ -6,14 +6,9 @@ export const getLoginUrl = (): string => {
   }
 
   const baseUrl = 'https://go.second.me/oauth/';
-  
-  // 1. 将常量的声明移到大括号外面
-  const redirectUri = window.location.origin + '/oauth/callback';
-
-  // 2. 在大括号里面使用标准的“键: 值”格式
   const params = new URLSearchParams({
     client_id: clientId || '',
-    redirect_uri: redirectUri, 
+    redirect_uri: `${window.location.origin}/oauth/callback`,
     response_type: 'code',
     scope: 'user.info user.info.shades chat'
   });
