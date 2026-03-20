@@ -3,11 +3,9 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import path from 'path'; 
 import { fileURLToPath } from 'url'; 
 import cors from 'cors'; 
-import { randomUUID } from 'node:crypto';
 import * as z from 'zod/v4';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 
 const __filename = fileURLToPath(import.meta.url); 
 const __dirname = path.dirname(__filename); 
@@ -15,107 +13,67 @@ const __dirname = path.dirname(__filename);
 const app = express(); 
 app.use(cors()); 
 
-const mcpServer = new McpServer(
-  {
-    name: 'half-sugar-gym-mcp',
-    version: '1.0.0'
-  },
-  {
-    capabilities: {
-      tools: {}
-    }
-  }
-);
-
-mcpServer.registerTool(
-  'get_fitness_plan',
-  {
-    description: '获取用户的专属健身计划。',
-    inputSchema: {
-      user_intent: z.string().describe('用户的身体诉求或目标，例如：想减脂、想练胸肌')
-    }
-  },
-  async ({ user_intent }) => {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `已为你生成针对“${user_intent}”的专属训练计划：\n1. 热身：慢跑 5 分钟\n2. 力量：深蹲 4 组 x 12 次\n3. 核心：平板支撑 3 组 x 1 分钟`
-        }
-      ]
-    };
-  }
-);
-
-mcpServer.registerTool(
-  'record_workout',
-  {
-    description: '记录用户刚刚完成的健身动作到脑宇宙。',
-    inputSchema: {
-      actions: z.array(z.string()).describe("用户完成的健身动作列表，例如：['深蹲', '卧推']")
-    }
-  },
-  async ({ actions }) => {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `成功记录训练动作：${actions.join('、')}`
-        }
-      ]
-    };
-  }
-);
-
-const transports = {};
-
-app.use('/mcp', express.json());
-app.all('/mcp', async (req, res) => {
-  try {
-    const sessionId = req.headers['mcp-session-id'];
-    let transport;
-
-    if (sessionId && transports[sessionId]) {
-      const existingTransport = transports[sessionId];
-      if (existingTransport instanceof StreamableHTTPServerTransport) {
-        transport = existingTransport;
-      } else {
-        res.status(400).json({
-          jsonrpc: '2.0',
-          error: {
-            code: -32000,
-            message: 'Bad Request: Session exists but uses a different transport protocol'
-          },
-          id: null
-        });
-        return;
+const createGymMcpServer = () => {
+  const server = new McpServer(
+    {
+      name: 'half-sugar-gym-mcp',
+      version: '1.0.0'
+    },
+    {
+      capabilities: {
+        tools: {}
       }
-    } else if (!sessionId && req.method === 'POST' && isInitializeRequest(req.body)) {
-      transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => randomUUID(),
-        onsessioninitialized: (sid) => {
-          transports[sid] = transport;
-        }
-      });
-
-      transport.onclose = () => {
-        const sid = transport.sessionId;
-        if (sid && transports[sid]) delete transports[sid];
-      };
-
-      await mcpServer.connect(transport);
-    } else {
-      res.status(400).json({
-        jsonrpc: '2.0',
-        error: {
-          code: -32000,
-          message: 'Bad Request: No valid session ID provided'
-        },
-        id: null
-      });
-      return;
     }
+  );
 
+  server.registerTool(
+    'get_fitness_plan',
+    {
+      description: '获取用户的专属健身计划。',
+      inputSchema: {
+        user_intent: z.string().describe('用户的身体诉求或目标，例如：想减脂、想练胸肌')
+      }
+    },
+    async ({ user_intent }) => {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `已为你生成针对“${user_intent}”的专属训练计划：\n1. 热身：慢跑 5 分钟\n2. 力量：深蹲 4 组 x 12 次\n3. 核心：平板支撑 3 组 x 1 分钟`
+          }
+        ]
+      };
+    }
+  );
+
+  server.registerTool(
+    'record_workout',
+    {
+      description: '记录用户刚刚完成的健身动作到脑宇宙。',
+      inputSchema: {
+        actions: z.array(z.string()).describe("用户完成的健身动作列表，例如：['深蹲', '卧推']")
+      }
+    },
+    async ({ actions }) => {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `成功记录训练动作：${actions.join('、')}`
+          }
+        ]
+      };
+    }
+  );
+
+  return server;
+};
+
+app.post('/mcp', express.json(), async (req, res) => {
+  const server = createGymMcpServer();
+  const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+  try {
+    await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   } catch (error) {
     if (!res.headersSent) {
@@ -128,7 +86,34 @@ app.all('/mcp', async (req, res) => {
         id: null
       });
     }
+  } finally {
+    res.on('close', () => {
+      transport.close();
+      server.close();
+    });
   }
+});
+
+app.get('/mcp', async (req, res) => {
+  res.writeHead(405).end(JSON.stringify({
+    jsonrpc: '2.0',
+    error: {
+      code: -32000,
+      message: 'Method not allowed.'
+    },
+    id: null
+  }));
+});
+
+app.delete('/mcp', async (req, res) => {
+  res.writeHead(405).end(JSON.stringify({
+    jsonrpc: '2.0',
+    error: {
+      code: -32000,
+      message: 'Method not allowed.'
+    },
+    id: null
+  }));
 });
 
 // ==========================================
