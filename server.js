@@ -18,7 +18,8 @@ app.use('/gate', createProxyMiddleware({
   target: 'https://api.mindverse.com', 
   changeOrigin: true, 
   secure: false,
-  pathRewrite: { '^/gate': '' }
+  // 强制重写：忽略 Express 的裁剪，直接拿浏览器的原始完整路径去请求 
+  pathRewrite: (path, req) => req.originalUrl
 })); 
 
 // React 路由兜底：任何不认识的请求，统统返回大厅首页 
