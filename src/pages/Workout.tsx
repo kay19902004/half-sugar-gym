@@ -15,6 +15,7 @@ export default function Workout() {
 
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
   const [completedTasks, setCompletedTasks] = useState<number[]>([]);
+  const [isPlanOpen, setIsPlanOpen] = useState(window.innerWidth > 768);
   
   const [userAction, setUserAction] = useState<string>('idle');
   const [coachBubble, setCoachBubble] = useState<string>("来吧！专属计划已生成。准备好了就点击右侧的【开始训练】！");
@@ -34,6 +35,7 @@ export default function Workout() {
     if (activeTaskIndex !== null) return; 
     
     setActiveTaskIndex(taskIndex);
+    setIsPlanOpen(false); // 训练时自动收起面板，避免遮挡人物动作
     
     const task = aiPlan[taskIndex];
     let step = 0;
@@ -133,12 +135,32 @@ export default function Workout() {
           </div>
         </div>
 
-        <div className="absolute top-20 right-4 w-64 max-h-[65vh] rounded-2xl md:w-80 md:right-8 md:top-24 md:bottom-24 md:max-h-none md:rounded-3xl bg-black/40 backdrop-blur-xl border border-white/20 p-4 md:p-6 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] z-50">
-          <h2 className="text-white text-base md:text-xl font-bold mb-4 md:mb-6 flex items-center border-b border-white/10 pb-2 md:pb-4">
-            📋 今日 AI 专属计划
-          </h2>
-          
-          <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 custom-scrollbar pr-2">
+        {/* 悬浮打开按钮（在面板折叠时显示） */}
+        {!isPlanOpen && (
+          <button 
+            onClick={() => setIsPlanOpen(true)}
+            className="absolute top-20 right-4 z-[150] bg-black/60 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full shadow-xl flex items-center gap-2 hover:bg-black/80 transition-all animate-in fade-in"
+          >
+            📋 <span className="text-sm font-bold">训练计划</span>
+          </button>
+        )}
+
+        {/* 训练计划面板（展开状态） */}
+        {isPlanOpen && (
+          <div className="absolute top-20 right-4 w-64 max-h-[65vh] rounded-2xl md:w-80 md:right-8 md:top-24 md:bottom-24 md:max-h-none md:rounded-3xl bg-black/80 md:bg-black/40 backdrop-blur-xl border border-white/20 p-4 md:p-6 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] z-[100] animate-in slide-in-from-right-8 fade-in duration-300">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2 md:pb-4 mb-4 md:mb-6">
+              <h2 className="text-white text-base md:text-xl font-bold flex items-center">
+                📋 今日 AI 专属计划
+              </h2>
+              <button 
+                onClick={() => setIsPlanOpen(false)}
+                className="text-white/50 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 custom-scrollbar pr-2">
             {aiPlan.map((task, index) => {
               const taskId = task.id !== undefined ? task.id : index;
               const isCompleted = completedTasks.includes(taskId);
@@ -186,6 +208,7 @@ export default function Workout() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       <style>{`
