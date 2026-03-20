@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🌟 核心像素图不模糊属性 */
+.pixelated {
+  image-rendering: pixelated;
+}
+
+/* 核心动画原理：移动长图背景 */
+@keyframes play-sprite {
+  from { background-position: 0 0; }
+  to { background-position: 100% 0; }
+}
+
+/* ========================================= */
+/* 🌟 玩家漫游动画 (Walk Cycle: 4帧) */
+/* ========================================= */
+.animate-player-walk {
+  animation: play-sprite 0.8s steps(4) infinite;
+}
+
+/* ========================================= */
+/* 🌟 VIP 专属训练动画 ( steps(4) 硬切 ) */
+/* ========================================= */
+
+/* 1. 打工人小李待机: 4帧 (动作可以慢一点) */
+.animate-npc-xiaoli-idle {
+  animation: play-sprite 1s steps(4) infinite;
+}
+
+/* 2. 暴汗Chloe跑步: 4帧 (动作快一点) */
+.animate-npc-chloe-run {
+  animation: play-sprite 0.6s steps(4) infinite;
+}
+
+/* 3. 网红小V自拍Pose: 4帧 (简单的肢体移动) */
+.animate-npc-v-selfie {
+  animation: play-sprite 1s steps(4) infinite;
+}
+
+/* 4. 瑜伽小美待机: 4帧 (呼吸起伏) */
+.animate-npc-xiaomei-idle {
+  animation: play-sprite 1s steps(4) infinite;
+}
+
+/* 5. 臥推阿强: 4帧 */
+.animate-workout-bench-press {
+  animation: play-sprite 1s steps(4) infinite;
+}
+
+/* 教练打手势: 这里复用我们之前的 */
+.animate-coach-gesture {
+  animation: play-sprite 0.8s steps(4) infinite;
+}
