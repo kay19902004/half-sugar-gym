@@ -7,6 +7,7 @@ interface UserInfo {
   height: number;
   weight: number;
   shades: string[]; // 兴趣标签
+  avatar?: string;
 }
 
 interface UserState {

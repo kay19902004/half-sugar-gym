@@ -17,7 +17,7 @@ import playerBenchpressImg from '@/assets/player-benchpress.png';
 import playerWaterImg from '@/assets/player-water.png';
 import coachCurlImg from '@/assets/coach-curl.png';
 import playerCurlImg from '@/assets/player-curl.png';
-import coachDeadliftImg from '@/assets/coach-deadlift.png';
+// import coachDeadliftImg from '@/assets/coach-deadlift.png';
 import playerDeadliftImg from '@/assets/player-deadlift.png';
 import coachCheerImg from '@/assets/coach-cheer.png';
 
@@ -31,6 +31,9 @@ interface SpriteProps {
   width?: number;
   unit?: string;
   className?: string;
+  x?: number;
+  y?: number;
+  useImage?: boolean;
 }
 
 export default function Sprite({ 
@@ -47,7 +50,7 @@ export default function Sprite({
       if (actionType === 'squat') return { img: coachSquatImg, frames: 6 };
       if (actionType === 'bench_press') return { img: coachBenchpressImg, frames: 4 };
       if (actionType === 'curl') return { img: coachCurlImg, frames: 6 }; // 弯举
-      if (actionType === 'deadlift') return { img: coachDeadliftImg, frames: 8 }; // 划船/硬拉
+      if (actionType === 'deadlift') return { img: coachIdleImg, frames: 4 }; // 划船/硬拉 (Temporarily mapped to idle since coach-deadlift.png is missing)
       if (actionType === 'cheer') return { img: coachCheerImg, frames: 6 }; // 欢呼
       return { img: coachIdleImg, frames: 4 }; // 兜底：待机
     }
