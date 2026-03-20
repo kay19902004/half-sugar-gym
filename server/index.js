@@ -2,9 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// 处理 ESM 下的 __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 🎯 关键修复：强制指定去上一级（根目录）读取 .env 文件！
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 app.use(cors());
@@ -54,7 +60,19 @@ app.post('/api/auth/token', async (req, res) => {
   }
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+// ==========================================
+// 🎯 生产环境大一统：托管前端静态资源 & 路由兜底
+// ==========================================
+// 把外层项目 build 出来的 dist 目录作为静态资源托管
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// SPA 路由兜底：所有未命中的请求都返回 index.html
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 代理服务器已启动，正在持续监听 http://localhost:${PORT}`);
 });
