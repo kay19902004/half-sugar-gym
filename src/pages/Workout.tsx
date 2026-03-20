@@ -133,12 +133,12 @@ export default function Workout() {
           </div>
         </div>
 
-        <div className="absolute left-0 right-0 bottom-0 max-h-[50vh] rounded-t-3xl md:left-auto md:right-8 md:top-24 md:bottom-24 md:max-h-none md:w-80 md:rounded-3xl bg-black/40 backdrop-blur-xl border border-white/20 p-6 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] z-50">
-          <h2 className="text-white text-xl font-bold mb-6 flex items-center border-b border-white/10 pb-4">
+        <div className="absolute top-20 right-4 w-64 max-h-[65vh] rounded-2xl md:w-80 md:right-8 md:top-24 md:bottom-24 md:max-h-none md:rounded-3xl bg-black/40 backdrop-blur-xl border border-white/20 p-4 md:p-6 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] z-50">
+          <h2 className="text-white text-base md:text-xl font-bold mb-4 md:mb-6 flex items-center border-b border-white/10 pb-2 md:pb-4">
             📋 今日 AI 专属计划
           </h2>
           
-          <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2">
+          <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 custom-scrollbar pr-2">
             {aiPlan.map((task, index) => {
               const taskId = task.id !== undefined ? task.id : index;
               const isCompleted = completedTasks.includes(taskId);
@@ -147,30 +147,30 @@ export default function Workout() {
               return (
                 <div 
                   key={taskId} 
-                  className={`p-4 rounded-2xl border transition-all ${
+                  className={`p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all ${
                     isCompleted ? 'bg-green-500/10 border-green-500/30' : 
                     isActive ? 'bg-blue-500/20 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 
                     'bg-white/5 border-white/10'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className={`font-bold ${isCompleted ? 'text-green-400 line-through opacity-60' : 'text-white'}`}>
+                    <h3 className={`font-bold text-sm md:text-base ${isCompleted ? 'text-green-400 line-through opacity-60' : 'text-white'}`}>
                       {index + 1}. {task.name}
                     </h3>
-                    {isCompleted && <CheckCircle2 className="w-5 h-5 text-green-400" />}
+                    {isCompleted && <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-400" />}
                   </div>
                   
                   {!isCompleted && (
                     <button 
                       onClick={() => startWorkout(index)}
                       disabled={activeTaskIndex !== null}
-                      className={`mt-2 w-full py-2 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${
+                      className={`mt-2 w-full py-1.5 md:py-2 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs md:text-sm transition-all ${
                         isActive ? 'bg-blue-500 text-white animate-pulse' : 
                         activeTaskIndex !== null ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed' : 
                         'bg-white text-black hover:bg-gray-200'
                       }`}
                     >
-                      {isActive ? '训练进行中...' : <><PlayCircle className="w-4 h-4 mr-1" /> 开始训练</>}
+                      {isActive ? '训练进行中...' : <><PlayCircle className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1" /> 开始训练</>}
                     </button>
                   )}
                 </div>
