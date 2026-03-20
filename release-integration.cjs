@@ -19,12 +19,13 @@ function request(url, options, body = null) {
 async function run() {
   const token = fs.readFileSync('.secondme-token', 'utf-8').trim();
   const integrationId = 'c5c2b5fd-d4c7-4480-b25b-2e594b3b0694';
+  const versionNumber = 3;
   
   console.log("Validating Integration...");
   const validateRes = await request(`https://app.mindos.com/gate/lab/api/integrations/${integrationId}/validate`, {
     method: 'POST',
     headers: { 'token': token, 'Content-Type': 'application/json' }
-  }, { versionNumber: 1 });
+  }, { versionNumber });
   
   console.log("Validation Result:", JSON.stringify(validateRes, null, 2));
 
@@ -34,7 +35,7 @@ async function run() {
     const releaseRes = await request(`https://app.mindos.com/gate/lab/api/integrations/${integrationId}/release`, {
       method: 'POST',
       headers: { 'token': token, 'Content-Type': 'application/json' }
-    }, { versionNumber: 1 });
+    }, { versionNumber });
     console.log("Release Result:", JSON.stringify(releaseRes, null, 2));
   }
 }

@@ -3,12 +3,11 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import path from 'path'; 
 import { fileURLToPath } from 'url'; 
 import cors from 'cors'; 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { randomUUID } from 'node:crypto';
+import * as z from 'zod/v4';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 
 const __filename = fileURLToPath(import.meta.url); 
 const __dirname = path.dirname(__filename); 
@@ -16,99 +15,120 @@ const __dirname = path.dirname(__filename);
 const app = express(); 
 app.use(cors()); 
 
-// ==========================================
-// 🚀 MCP 服务器设置
-// ==========================================
-const mcpServer = new Server({
-  name: "half-sugar-gym-mcp",
-  version: "1.0.0"
-}, {
-  capabilities: {
-    tools: {}
+const mcpServer = new McpServer(
+  {
+    name: 'half-sugar-gym-mcp',
+    version: '1.0.0'
+  },
+  {
+    capabilities: {
+      tools: {}
+    }
   }
-});
+);
 
-// 定义可供 OpenClaw 使用的 Tool
-mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: "get_fitness_plan",
-        description: "获取用户的专属健身计划。调用前请确保已获得用户的 SecondMe Token。",
-        inputSchema: {
-          type: "object",
-          properties: {
-            user_intent: {
-              type: "string",
-              description: "用户的身体诉求或目标，例如：想减脂、想练胸肌"
-            }
-          },
-          required: ["user_intent"]
+mcpServer.registerTool(
+  'get_fitness_plan',
+  {
+    description: '获取用户的专属健身计划。',
+    inputSchema: {
+      user_intent: z.string().describe('用户的身体诉求或目标，例如：想减脂、想练胸肌')
+    }
+  },
+  async ({ user_intent }) => {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `已为你生成针对“${user_intent}”的专属训练计划：\n1. 热身：慢跑 5 分钟\n2. 力量：深蹲 4 组 x 12 次\n3. 核心：平板支撑 3 组 x 1 分钟`
         }
-      },
-      {
-        name: "record_workout",
-        description: "记录用户刚刚完成的健身动作到脑宇宙社交记忆中。",
-        inputSchema: {
-          type: "object",
-          properties: {
-            actions: {
-              type: "array",
-              items: { type: "string" },
-              description: "用户完成的健身动作列表，例如：['深蹲', '卧推']"
-            }
-          },
-          required: ["actions"]
+      ]
+    };
+  }
+);
+
+mcpServer.registerTool(
+  'record_workout',
+  {
+    description: '记录用户刚刚完成的健身动作到脑宇宙。',
+    inputSchema: {
+      actions: z.array(z.string()).describe("用户完成的健身动作列表，例如：['深蹲', '卧推']")
+    }
+  },
+  async ({ actions }) => {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `成功记录训练动作：${actions.join('、')}`
         }
+      ]
+    };
+  }
+);
+
+const transports = {};
+
+app.use('/mcp', express.json());
+app.all('/mcp', async (req, res) => {
+  try {
+    const sessionId = req.headers['mcp-session-id'];
+    let transport;
+
+    if (sessionId && transports[sessionId]) {
+      const existingTransport = transports[sessionId];
+      if (existingTransport instanceof StreamableHTTPServerTransport) {
+        transport = existingTransport;
+      } else {
+        res.status(400).json({
+          jsonrpc: '2.0',
+          error: {
+            code: -32000,
+            message: 'Bad Request: Session exists but uses a different transport protocol'
+          },
+          id: null
+        });
+        return;
       }
-    ]
-  };
-});
+    } else if (!sessionId && req.method === 'POST' && isInitializeRequest(req.body)) {
+      transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => randomUUID(),
+        onsessioninitialized: (sid) => {
+          transports[sid] = transport;
+        }
+      });
 
-// 监听 Tool 调用请求
-mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
-  // 必须通过 HTTP 标头拦截拿到用户的 Token，这取决于 SSE 连接阶段如何处理
-  // 此处只是模拟具体实现，正式环境应从请求上下文中提取 Token。
-  switch (request.params.name) {
-    case "get_fitness_plan":
-      return {
-        content: [
-          {
-            type: "text",
-            text: `已为你生成针对 "${request.params.arguments?.user_intent}" 的专属训练计划：\n1. 热身：慢跑 5 分钟\n2. 力量：深蹲 4 组 x 12 次\n3. 核心：平板支撑 3 组 x 1 分钟`
-          }
-        ]
+      transport.onclose = () => {
+        const sid = transport.sessionId;
+        if (sid && transports[sid]) delete transports[sid];
       };
-    case "record_workout":
-      const actions = request.params.arguments?.actions || [];
-      return {
-        content: [
-          {
-            type: "text",
-            text: `成功将你的训练动作 [${actions.join(', ')}] 写入到你的脑宇宙中！你的数字分身已经记住了你的汗水。`
-          }
-        ]
-      };
-    default:
-      throw new Error(`Unknown tool: ${request.params.name}`);
-  }
-});
 
-// MCP SSE 挂载点
-let transport;
-app.get("/mcp/sse", async (req, res) => {
-  console.log("Client connected to MCP SSE");
-  transport = new SSEServerTransport("/mcp/messages", res);
-  await mcpServer.connect(transport);
-});
+      await mcpServer.connect(transport);
+    } else {
+      res.status(400).json({
+        jsonrpc: '2.0',
+        error: {
+          code: -32000,
+          message: 'Bad Request: No valid session ID provided'
+        },
+        id: null
+      });
+      return;
+    }
 
-// MCP Messages 端点
-app.post("/mcp/messages", express.json(), async (req, res) => {
-  if (!transport) {
-    res.status(400).send("No active MCP SSE session");
-    return;
+    await transport.handleRequest(req, res, req.body);
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: '2.0',
+        error: {
+          code: -32603,
+          message: 'Internal server error'
+        },
+        id: null
+      });
+    }
   }
-  await transport.handlePostMessage(req, res);
 });
 
 // ==========================================

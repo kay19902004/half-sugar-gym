@@ -29,7 +29,7 @@
       }
     ],
     "mcp": {
-      "endpoint": "https://half-sugar-gym.up.railway.app/mcp/sse",
+      "endpoint": "https://half-sugar-gym-production.up.railway.app/mcp",
       "timeoutMs": 15000,
       "toolAllow": ["get_fitness_plan", "record_workout"],
       "headersTemplate": {},
@@ -42,7 +42,7 @@
     "envBindings": {
       "release": {
         "enabled": true,
-        "endpoint": "https://half-sugar-gym.up.railway.app/mcp/sse"
+        "endpoint": "https://half-sugar-gym-production.up.railway.app/mcp"
       }
     }
   },
