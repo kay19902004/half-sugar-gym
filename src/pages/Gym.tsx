@@ -171,8 +171,8 @@ export default function Gym() {
   };
 
   return (
-    <div className="min-h-screen relative bg-[#1E1E1E] overflow-hidden font-sans flex flex-col items-center justify-center">
-      <header className="absolute top-0 left-0 right-0 h-14 bg-black/20 backdrop-blur-md flex items-center px-6 z-[9999] border-b border-white/10">
+    <div className="min-h-screen w-full bg-[#111] overflow-hidden font-sans flex flex-col items-center justify-center relative">
+      <header className="absolute top-0 left-0 right-0 h-14 bg-black/40 backdrop-blur-md flex items-center px-6 z-[9999] border-b border-white/10">
         <Link to="/" className="flex items-center text-white/80 hover:text-white transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" />
           返回首页
@@ -190,7 +190,7 @@ export default function Gym() {
         </Link>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 relative w-full mt-16 mb-20 z-0">
+      <div className="w-full max-h-screen flex items-center justify-center mt-14 mb-20">
         <GymScene>
           
           <div className="absolute transition-all duration-75 pointer-events-none" style={{ left: `${posA.x}%`, top: `${posA.y}%`, zIndex: Math.floor(posA.y) + 100 }}>
