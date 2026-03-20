@@ -97,13 +97,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 // MCP SSE 挂载点
 let transport;
 app.get("/mcp/sse", async (req, res) => {
-  // 这里必须验证 SecondMe 的 Authorization: Bearer <Token>
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).send("Unauthorized: Missing Bearer Token");
-    return;
-  }
-  console.log("Client connected to MCP SSE, Token:", authHeader.substring(0, 15) + "...");
+  console.log("Client connected to MCP SSE");
   transport = new SSEServerTransport("/mcp/messages", res);
   await mcpServer.connect(transport);
 });
