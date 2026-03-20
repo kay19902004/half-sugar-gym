@@ -133,7 +133,7 @@ export default function Workout() {
           </div>
         </div>
 
-        <div className="absolute right-8 top-24 bottom-24 w-80 bg-black/40 backdrop-blur-xl border border-white/20 rounded-3xl p-6 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] z-50">
+        <div className="absolute left-0 right-0 bottom-0 max-h-[50vh] rounded-t-3xl md:left-auto md:right-8 md:top-24 md:bottom-24 md:max-h-none md:w-80 md:rounded-3xl bg-black/40 backdrop-blur-xl border border-white/20 p-6 flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] z-50">
           <h2 className="text-white text-xl font-bold mb-6 flex items-center border-b border-white/10 pb-4">
             📋 今日 AI 专属计划
           </h2>
