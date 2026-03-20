@@ -21,6 +21,18 @@ app.use(
     // 如果您把后端部署到了另一个地址，请把这里的 http://localhost:3001 改成您的后端绝对地址
     target: 'http://localhost:3001', 
     changeOrigin: true,
+    secure: false, // 防止 SSL 证书校验拦截
+    // 根据需要配置 pathRewrite, 如果后端接口本身就带 /api，则不需要 rewrite
+    // pathRewrite: { '^/api': '' },
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`[Proxy] /api request to: ${proxyReq.path}`);
+    },
+    onError: (err, req, res) => {
+      console.error('Proxy /api Error:', err.message);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Proxy /api failed', details: err.message });
+      }
+    }
   })
 );
 
@@ -30,6 +42,16 @@ app.use(
   createProxyMiddleware({
     target: 'https://api.mindverse.com',
     changeOrigin: true,
+    secure: false, // 强制信任目标 HTTPS 证书
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`[Proxy] /gate request to: ${proxyReq.path}`);
+    },
+    onError: (err, req, res) => {
+      console.error('Proxy /gate Error:', err.message);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Proxy /gate failed', details: err.message });
+      }
+    }
   })
 );
 
