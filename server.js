@@ -34,7 +34,8 @@ app.use(
 );
 
 // SPA 路由兜底：所有未命中的请求都返回 index.html
-app.get('*', (req, res) => {
+// 适配 Express 5: 使用全局中间件替代弃用的 app.get('*')
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
