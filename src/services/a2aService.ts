@@ -2,22 +2,29 @@
 export const generateIcebreakerStream = async (
   token: string, 
   myInfo: { name: string, shades: string[] }, 
-  strangerInfo: { name: string, shades: string[] },
+  strangerInfo: { name: string, shades: string[], targetAgentId?: string },
   onChunk: (text: string) => void
 ) => {
   console.log("🚀 开始请求 SecondMe Chat API...");
   
+  const payload: any = {
+    message: `我遇到了健身房的跑友 ${strangerInfo.name}，他/她的兴趣是 ${strangerInfo.shades.join(',')}。请主动向他/她打个招呼，一两句话即可，语气要自然、热情，符合我（${myInfo.name}，喜欢${myInfo.shades.join(',')}）的人设。不要输出任何解释。`,
+    systemPrompt: '你现在是一个在虚拟健身房里锻炼的真实人类分身。',
+    model: 'anthropic/claude-sonnet-4-5'
+  };
+
+  // 如果有目标Agent ID，则带上，让对话发送给指定的Agent
+  if (strangerInfo.targetAgentId) {
+    payload.targetAgentId = strangerInfo.targetAgentId;
+  }
+
   const response = await fetch('/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      message: `我遇到了健身房的跑友 ${strangerInfo.name}，他/她的兴趣是 ${strangerInfo.shades.join(',')}。请主动向他/她打个招呼，一两句话即可，语气要自然、热情，符合我（${myInfo.name}，喜欢${myInfo.shades.join(',')}）的人设。不要输出任何解释。`,
-      systemPrompt: '你现在是一个在虚拟健身房里锻炼的真实人类分身。',
-      model: 'anthropic/claude-sonnet-4-5'
-    })
+    body: JSON.stringify(payload)
   });
 
   if (!response.ok) {
@@ -99,23 +106,29 @@ export const saveSocialMemory = async (token: string, strangerName: string, chat
 export const generateReplyStream = async (
   token: string, 
   myInfo: { name: string, shades: string[] }, 
-  strangerInfo: { name: string, shades: string[] },
+  strangerInfo: { name: string, shades: string[], targetAgentId?: string },
   chatHistory: string, 
   onChunk: (text: string) => void
 ) => {
   console.log("🚀 开始请求小美的回复...");
   
+  const payload: any = {
+    message: `我是 ${myInfo.name}，刚才我对你说："${chatHistory}"。请根据你的兴趣（${strangerInfo.shades.join(',')}），给我一个自然、友好的简短回复，一两句话即可。不要输出任何解释，直接说话。`,
+    systemPrompt: `你现在是健身房里的真实用户 ${strangerInfo.name}。`,
+    model: 'anthropic/claude-sonnet-4-5'
+  };
+
+  if (strangerInfo.targetAgentId) {
+    payload.targetAgentId = strangerInfo.targetAgentId;
+  }
+
   const response = await fetch('/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      message: `我是 ${myInfo.name}，刚才我对你说："${chatHistory}"。请根据你的兴趣（${strangerInfo.shades.join(',')}），给我一个自然、友好的简短回复，一两句话即可。不要输出任何解释，直接说话。`,
-      systemPrompt: `你现在是健身房里的真实用户 ${strangerInfo.name}。`,
-      model: 'anthropic/claude-sonnet-4-5'
-    })
+    body: JSON.stringify(payload)
   });
 
   if (!response.ok) throw new Error(`小美 API 报错: ${response.status}`);
@@ -216,26 +229,28 @@ export const generateCoachPlanStream = async (
   return fullText;
 };
 
-// 5. 训练完成后的“记忆同步”接口
+// 5. 训练完成后的“记忆同步”接口 (通过软记忆)
 export const syncWorkoutToBrain = async (token: string, actions: string[]) => {
   console.log("🧠 正在将训练成果写入脑宇宙记忆...");
   const actionListStr = actions.join('、');
-  const memoryText = `学员今天非常出色地完成了我安排的训练计划，包含动作：${actionListStr}。请记住TA的努力，下次见面时要夸奖TA！`;
+  const memoryText = `今天我在半糖健身房非常出色地完成了训练计划，包含动作：${actionListStr}。`;
 
   try {
-    const response = await fetch('/gate/lab/api/secondme/memory/create', {
+    const response = await fetch('/gate/lab/api/secondme/note/create', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        text: memoryText
+        content: memoryText
       })
     });
     
     if (response.ok) {
       console.log("✅ 记忆同步成功！AI 已记住你的汗水！");
+    } else {
+      console.error("同步记忆失败:", await response.text());
     }
   } catch (error) {
     console.error("同步记忆失败:", error);

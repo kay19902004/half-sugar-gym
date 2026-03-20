@@ -10,7 +10,7 @@ export const getLoginUrl = (): string => {
     client_id: clientId || '',
     redirect_uri: `${window.location.origin}/oauth/callback`,
     response_type: 'code',
-    scope: 'user.info user.info.shades chat'
+    scope: 'user.info user.info.shades chat user.info.softmemory note.add'
   });
   
   return `${baseUrl}?${params.toString()}`;
