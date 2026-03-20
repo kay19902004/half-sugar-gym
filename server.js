@@ -122,7 +122,19 @@ app.delete('/mcp', async (req, res) => {
 // 托管前端打包后的静态文件 
 app.use(express.static(path.join(__dirname, 'dist'))); 
 
-// 【核心代理】把所有前端发往 /gate 的请求，原封不动地转发给 Mindverse AI 
+// 【核心代理 1】处理前端向后端发起获取 Token 的请求
+// 把前端 /api/auth/token 代理转发到 SecondMe 获取 token 接口
+app.use('/api/auth/token', createProxyMiddleware({
+  target: 'https://api.mindverse.com',
+  changeOrigin: true,
+  secure: false,
+  pathRewrite: (path, req) => {
+    // 之前前端代码是用这个接口拿 Code 换 Token，我们重定向到真实的 SecondMe 接口
+    return '/gate/lab/api/oauth/token/code';
+  }
+}));
+
+// 【核心代理 2】把所有前端发往 /gate 的请求，原封不动地转发给 Mindverse AI 
 app.use('/gate', createProxyMiddleware({ 
   target: 'https://api.mindverse.com', 
   changeOrigin: true, 
