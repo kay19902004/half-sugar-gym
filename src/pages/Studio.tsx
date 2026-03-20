@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import Sprite from '@/components/Sprite';
 import { useUserStore } from '@/store';
 import { useAppStore } from '@/store/useAppStore';
-import consultBg from '@/assets/consult-bg.jpg';
+import desktopBg from '@/assets/consult-bg.jpg';
+import mobileBg from '@/assets/studio-mobile-bg.jpeg';
 import { generateCoachPlanStream } from '@/services/a2aService'; 
 import { useWorkoutStore } from '@/store/useWorkoutStore'; 
 
@@ -104,12 +105,11 @@ export default function Studio() {
         </Link>
       </header>
 
-      {/* 比例容器：保持 16:9 比例，最大高度不超过屏幕，防止裁剪 */}
+      {/* 全屏背景容器，响应式切换移动/PC背景 */}
       <div 
-        className="relative w-full max-h-screen aspect-video bg-contain bg-center bg-no-repeat flex items-center justify-center"
-        style={{ backgroundImage: `url(${consultBg})` }}
+        className="relative min-h-screen w-full bg-cover bg-center bg-no-repeat flex items-center justify-center responsive-bg"
       >
-        <div className="absolute transition-all duration-300" style={{ left: '35%', top: '55%', zIndex: 50 }}>
+        <div className="absolute transition-all duration-300 left-[25%] bottom-[35%] md:left-[35%] md:bottom-[40%] z-[50]">
           <Sprite characterId="coach" actionType="idle" width={140} unit="px" />
           
           {coachBubble && (
@@ -127,7 +127,7 @@ export default function Studio() {
           </div>
         </div>
 
-        <div className="absolute transition-all duration-300" style={{ left: '70%', top: '65%', zIndex: 60, transform: 'scaleX(-1)' }}>
+        <div className="absolute transition-all duration-300 left-[55%] bottom-[25%] md:left-[70%] md:bottom-[30%] z-[60]" style={{ transform: 'scaleX(-1)' }}>
           <Sprite characterId="player" actionType="idle" width={140} unit="px" />
           
           {userBubble && (
@@ -247,6 +247,16 @@ export default function Studio() {
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        
+        /* 响应式背景图切换 */
+        .responsive-bg {
+          background-image: url(${mobileBg});
+        }
+        @media (min-width: 768px) {
+          .responsive-bg {
+            background-image: url(${desktopBg});
+          }
+        }
       `}</style>
     </div>
   );
