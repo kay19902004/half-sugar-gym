@@ -30,28 +30,40 @@ export default function OAuthCallback() {
 
     const fetchTokenAndUser = async () => {
       try {
-        const redirectUri = window.location.origin + '/oauth/callback';
+        // 1. 调用线上真实后端 API，用 code 换取真实 access_token
+        const currentRedirectUri = window.location.origin + '/oauth/callback';
         
-        // 1. 调用本地或线上后端代理，用 code 换取真实 access_token
-        // 动态适配线上和本地后端地址
-        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-          ? 'http://localhost:3001/api/auth/token'
-          : `${window.location.origin}/api/auth/token`; // 假设线上环境前后端部署在同一域名下，或者由 Railway 处理代理
+        // 由于前端静态部署，不能走相对路径或本地后端代理，直接向目标 API 换取（注意：这要求目标 API 支持 CORS 且不介意暴露在前端）
+        // 或者是如果您把 Node 后端部署到了某个外网域名，请替换为该后端域名的绝对路径。
+        // 根据您的上一步，我们已经在 server 目录下建了后端。如果在 Railway 上前后端是分开部署的，您需要把这里的 URL 替换为您的后端真实域名。
+        // 这里暂时回滚为请求环境变量或动态判断，因为之前骤报了 "<!doctype..." 是因为前端静态服务器把 `/api/...` 路由全当成了前端页面返回了 `index.html`。
+        
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || (
+          window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? 'http://localhost:3001' 
+          : 'https://api.mindverse.com' // 如果您的后端没单独域名，而是直接请求第三方，请填第三方绝对路径
+        );
 
-        const response = await fetch(apiUrl, {
+        const apiUrl = `${backendUrl}/api/auth/token`; // 或者真实换取 Token 的第三方绝对路径，如 https://api.mindverse.com/oauth/token
+
+        const tokenResponse = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, redirect_uri: redirectUri })
+          body: JSON.stringify({
+            code,
+            redirect_uri: currentRedirectUri
+          })
         });
 
-        const data = await response.json();
+        const data = await tokenResponse.json();
 
-        if (!response.ok) {
+        if (!tokenResponse.ok) {
           throw new Error(data.error || '换取 Token 失败');
         }
 
+        const tokenStr = data.access_token || data.data?.access_token || code;
         // ✅ 成功拿到 Token，存入 Zustand
-        setToken(data.access_token);
+        setToken(tokenStr);
         
         // 2. 🌟 灵魂注入：拿着刚到手的 Token，去 SecondMe 拉取你的真实信息！
         try {
