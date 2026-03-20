@@ -7,7 +7,7 @@ export const generateIcebreakerStream = async (
 ) => {
   console.log("🚀 开始请求 SecondMe Chat API...");
   
-  const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
+  const response = await fetch('/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -72,7 +72,7 @@ export const generateIcebreakerStream = async (
 export const saveSocialMemory = async (token: string, strangerName: string, chatSummary: string) => {
   if (!chatSummary) return;
 
-  const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/agent_memory/ingest', {
+  const response = await fetch('/gate/lab/api/secondme/agent_memory/ingest', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -105,7 +105,7 @@ export const generateReplyStream = async (
 ) => {
   console.log("🚀 开始请求小美的回复...");
   
-  const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
+  const response = await fetch('/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -155,7 +155,7 @@ export const generateCoachPlanStream = async (
   userInput: string,
   onChunk: (text: string) => void
 ) => {
-  const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
+  const response = await fetch('/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -223,7 +223,7 @@ export const syncWorkoutToBrain = async (token: string, actions: string[]) => {
   const memoryText = `学员今天非常出色地完成了我安排的训练计划，包含动作：${actionListStr}。请记住TA的努力，下次见面时要夸奖TA！`;
 
   try {
-    const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/memory/create', {
+    const response = await fetch('/gate/lab/api/secondme/memory/create', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

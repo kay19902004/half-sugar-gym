@@ -18,7 +18,7 @@ export const getLoginUrl = (): string => {
 
 export const fetchCurrentUserInfo = async (token: string) => {
   try {
-    const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/user/info', {
+    const response = await fetch('/gate/lab/api/secondme/user/info', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
