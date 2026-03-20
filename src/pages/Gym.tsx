@@ -237,18 +237,18 @@ export default function Gym() {
         </span>
       </div>
 
-      <div className="absolute bottom-24 right-6 bg-white/90 backdrop-blur-md rounded-xl p-4 shadow-lg min-w-[250px] max-w-[300px] z-[9999] border border-white/20 max-h-[35vh] flex flex-col">
-        <div className="flex items-center text-gray-800 mb-3 font-semibold border-b border-gray-200 pb-2 shrink-0">
-          <MessageSquare className="w-4 h-4 mr-2 text-blue-500" />
+      <div className="absolute right-4 bottom-24 bg-white/90 backdrop-blur-md rounded-xl p-3 shadow-lg w-64 max-h-[35vh] z-[9999] border border-white/20 flex flex-col">
+        <div className="flex items-center text-gray-800 mb-2 font-semibold border-b border-gray-200 pb-2 shrink-0 text-sm">
+          <MessageSquare className="w-3 h-3 mr-1 text-blue-500" />
           社交记忆 (Agent Memory)
         </div>
-        <div className="overflow-y-auto space-y-3 custom-scrollbar">
+        <div className="overflow-y-auto space-y-2 custom-scrollbar">
           {memories.length === 0 ? (
-            <div className="text-sm text-gray-500 italic">暂无社交互动，等待 Agent 自主寻路偶遇...</div>
+            <div className="text-xs text-gray-500 italic">暂无社交互动，等待 Agent 自主寻路偶遇...</div>
           ) : (
             memories.map(mem => (
-              <div key={mem.id} className="text-sm bg-gray-50 p-2 rounded border border-gray-100 shadow-sm">
-                <div className="text-xs text-gray-400 mb-1">{new Date(mem.timestamp).toLocaleTimeString()}</div>
+              <div key={mem.id} className="text-xs bg-gray-50 p-2 rounded border border-gray-100 shadow-sm">
+                <div className="text-[10px] text-gray-400 mb-1">{new Date(mem.timestamp).toLocaleTimeString()}</div>
                 <div className="text-gray-700 whitespace-pre-wrap leading-relaxed">{mem.summary}</div>
               </div>
             ))
