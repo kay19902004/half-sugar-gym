@@ -17,7 +17,8 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.use('/gate', createProxyMiddleware({ 
   target: 'https://api.mindverse.com', 
   changeOrigin: true, 
-  secure: false 
+  secure: false,
+  pathRewrite: { '^/gate': '' }
 })); 
 
 // React 路由兜底：任何不认识的请求，统统返回大厅首页 
